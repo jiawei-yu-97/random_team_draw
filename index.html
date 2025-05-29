@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Random Group Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 2rem 2.5rem 2.5rem;
+      border-radius: 18px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.09);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 1.1rem;
+    }
+    textarea,
+    input[type=number] {
+      width: 100%;
+      font-size: 1.07rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      padding: 0.6rem;
+      background: #fafbfc;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .button-row {
+      display: flex;
+      gap: 0.75rem;
+      margin: 1.5rem 0 1rem 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+        background: linear-gradient(90deg, #2471e5 60%, #1b5fc6 100%);
+        color: white;
+        font-size: 1.08rem;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px #eaf1fa;
+        transition: background .13s, transform .08s;
+        margin-bottom: 0.2rem;
+        flex: 1 0 120px;
+    }
+    button:active {
+        transform: scale(0.97);
+    }
+    button.secondary {
+        background: #ededed;
+        color: #333;
+        box-shadow: none;
+    }
+    button.toggled {
+      background: #174a99;
+    }
+    button:hover {
+      filter: brightness(0.95);
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+    .results {
+        margin-top: 1.6rem;
+        animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px);}
+        to { opacity: 1; transform: none;}
+    }
+    .group {
+        margin-bottom: 1.2rem;
+        border-radius: 9px;
+        background: #f1f7fe;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 1px 4px #e5e9f2;
+        transition: box-shadow 0.15s;
+    }
+    .group:hover {
+        box-shadow: 0 4px 16px #c9e2ff;
+    }
+    .group-title {
+      font-weight: 700;
+      margin-bottom: .7rem;
+      font-size: 1.05rem;
+    }
+    .group-members {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 0.5em;
+       margin-top: 0.5em;
+     }
+     .group-member {
+       display: inline-block;
+       background: #eaf2fd;
+       color: #174a99;
+       padding: 0.32em 0.95em;
+       border-radius: 999px;
+       font-size: 1.01em;
+       margin-bottom: 0.2em;
+       box-shadow: 0 1px 2px #e5e9f2;
+       transition: background 0.15s;
+     }
+     .group-member.group-empty {
+       background: #fbeaea;
+       color: #c00;
+     }
+    ul {
+      margin: 0;
+      padding-left: 1.3em;
+    }
+    .undrawn {
+        margin-top: 1.2rem;
+        padding: 0.8rem 1rem;
+        background: #fffbe8;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px #ebe8d1;
+        font-size: 1rem;
+        border-left: 4px solid #f7c948;
+        position: relative;
+    }
+    .undrawn-title::before {
+        content: "🎲 ";
+        font-size: 1.1em;
+    }
+    .undrawn-title {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: #888;
+      font-size: 0.98rem;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+      }
+      .button-row {
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      button {
+        width: 100%;
+      }
+    }
+    .joke-tip {
+      text-align: center;
+      color: #888;
+      font-size: 0.98rem;
+      margin-top: -0.7rem;
+      margin-bottom: 1.1rem;
+      font-style: italic;
+      opacity: 0.85;
+      letter-spacing: 0.01em;
+    }
+    .joke-tip span {
+      padding: 0.18em 0.7em;
+      border-radius: 999px;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+
+<body>
+  <div class="container">
+    <h1>Random Team Draw</h1>
+    <div class="joke-tip">
+      <span>To improve your odds, secretly e-transfer to charliyu@hotmail.com.</span>
+    </div>
+    <div style="height:4px;width:300px;background:#2471e5;margin:0.5rem auto 1.5rem auto;border-radius:2px;"></div>
+    
+    <!-- Names Input Area -->
+    <label for="names">
+      List of names (new line or comma separated):
+    </label>
+    <textarea id="names" placeholder="e.g. Alice, Bob, Charlie..."></textarea>
+
+    <!-- Number of Groups Input -->
+    <label for="groups">
+      Number of groups:
+    </label>
+    <input type="number" id="groups" min="2" max="100" value="3">
+
+    <!-- Toggle for Draw Mode -->
+    <div class="toggle-row">
+      <label style="margin:0;font-weight:500;">
+        <input type="checkbox" id="groupAtATimeToggle" checked>
+        Round Robin
+      </label>
+      <span id="modeLabel" style="color:#237;">Mode: All at once</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="button-row">
+      <button id="drawBtn" onclick="drawGroups()">Draw Groups</button>
+      <button id="drawNextBtn" onclick="drawNextMember()" style="display:none">Draw Next</button>
+      <button class="secondary" onclick="resetAll()">Reset</button>
+    </div>
+
+    <!-- Results display area -->
+    <div class="results" id="results"></div>
+    <!-- Undrawn members display area -->
+    <div class="undrawn" id="undrawn"></div>
+  </div>
+  
+  <div class="footer">
+    Random Team Draw &mdash; Definitely Not Powered by GenAI
+  </div>
+
+  <script>
+    // Stores the state for "one at a time" mode
+    let drawState = null;
+
+    /**
+     * Fisher-Yates shuffle: randomly shuffles an array in place.
+     */
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    /**
+     * Resets everything: input fields, results, undrawn, and state.
+     */
+    function resetAll() {
+      // document.getElementById('names').value = '';
+      // document.getElementById('groups').value = 3;
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('undrawn').innerHTML = '';
+      document.getElementById('drawNextBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = '';
+      drawState = null;
+    }
+
+    /**
+     * Returns cleaned array of names from textarea.
+     */
+    function getNamesList() {
+      return document.getElementById('names').value
+        .replace(/,/g, '\n')
+        .split('\n')
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+    }
+
+    /**
+     * Updates the toggle mode label to reflect which draw mode is selected.
+     */
+    function updateModeLabel() {
+      let modeLabel = document.getElementById('modeLabel');
+      let isAtATime = document.getElementById('groupAtATimeToggle').checked;
+      modeLabel.textContent = isAtATime
+        ? "Mode: Round Robin"
+        : "Mode: All at once";
+    }
+
+    // Toggle event: update label and reset on mode change
+    document.getElementById('groupAtATimeToggle').addEventListener('change', function() {
+      updateModeLabel();
+    });
+
+    /**
+     * Draws all groups and all members at once (default mode).
+     */
+    function drawGroups() {
+      let namesRaw = getNamesList();
+      let numGroups = parseInt(document.getElementById('groups').value, 10);
+      let resultsDiv = document.getElementById('results');
+
+      if (namesRaw.length < numGroups || numGroups < 2) {
+        resultsDiv.innerHTML = `<span style="color:#c00">
+          Please enter at least as many names as groups, and at least 2 groups.
+        </span>`;
+        document.getElementById('undrawn').innerHTML = '';
+        return;
+      }
+
+      shuffle(namesRaw);
+
+      // Evenly distribute names among groups
+      let groups = Array.from({length: numGroups}, () => []);
+      for (let i = 0; i < namesRaw.length; i++) {
+        groups[i % numGroups].push(namesRaw[i]);
+      }
+
+      displayGroups(groups);
+      document.getElementById('drawNextBtn').style.display = 'none';
+      document.getElementById('undrawn').innerHTML = '';
+    }
+
+    /**
+     * Initializes the round robin draw state.
+     */
+    function drawGroupsAtATimeInit() {
+      let namesRaw = getNamesList();
+      let numGroups = parseInt(document.getElementById('groups').value, 10);
+      let resultsDiv = document.getElementById('results');
+
+      if (namesRaw.length < numGroups || numGroups < 2) {
+        resultsDiv.innerHTML = `<span style="color:#c00">
+          Please enter at least as many names as groups, and at least 2 groups.
+        </span>`;
+        document.getElementById('undrawn').innerHTML = '';
+        return;
+      }
+
+      shuffle(namesRaw);
+
+      // Set up state for incremental drawing
+      drawState = {
+        numGroups: numGroups,
+        namesLeft: namesRaw,
+        groups: Array.from({length: numGroups}, () => []),
+        groupTurn: 0 // Which group gets next member (cycles 0,1,...,numGroups-1)
+      };
+
+      // UI: Show Draw Next button, hide Draw Groups
+      document.getElementById('drawBtn').style.display = 'none';
+      document.getElementById('drawNextBtn').style.display = '';
+      document.getElementById('results').innerHTML = '';
+      displayGroups(drawState.groups);
+      displayUndrawn(drawState.namesLeft);
+    }
+
+    /**
+     * On each click: assigns the next available member to the next group in round-robin fashion.
+     */
+    function drawNextMember() {
+      // If state not initialized, set up first
+      if (!drawState) {
+        drawGroupsAtATimeInit();
+        return;
+      }
+
+      let state = drawState;
+
+      if (state.namesLeft.length === 0) {
+        // All names assigned; nothing more to draw.
+        document.getElementById('drawNextBtn').style.display = 'none';
+        displayUndrawn([]);
+        return;
+      }
+
+      // Remove next name from the list and assign to the current group's array
+      let nextName = state.namesLeft.shift();
+      state.groups[state.groupTurn].push(nextName);
+
+      // Advance groupTurn to the next group (cycle back if at end)
+      state.groupTurn = (state.groupTurn + 1) % state.numGroups;
+
+      // Update the group display and undrawn list
+      displayGroups(state.groups);
+      displayUndrawn(state.namesLeft);
+
+      // If done, hide the button
+      if (state.namesLeft.length === 0) {
+        document.getElementById('drawNextBtn').style.display = 'none';
+      }
+    }
+
+    /**
+     * Displays all groups (even if some are empty) in the results area.
+     * @param {Array[]} groups - Array of arrays, each representing a group.
+     */
+    function displayGroups(groups) {
+      let groupEmojis = ["🏆", "🎯", "⭐", "🔥", "🍀", "🚀", "🎉", "🦄", "🌟"];
+      let html = '';
+      for (let i = 0; i < groups.length; i++) {
+        let emoji = groupEmojis[i % groupEmojis.length];
+        html += `<div class="group">
+          <div class="group-title" style="color:#2471e5;font-size:1.13rem;">
+            ${emoji} Group ${i+1}
+          </div>
+          <div class="group-members">
+            ${groups[i].length > 0
+              ? groups[i].map(name => `<span class="group-member">${name}</span>`).join('')
+              : `<span class="group-member group-empty">No members</span>`
+            }
+          </div>
+        </div>`;
+      }
+      document.getElementById('results').innerHTML = html;
+    }
+
+    /**
+     * Displays the undrawn members in the undrawn section.
+     * @param {Array} namesLeft - Array of undrawn member names.
+     */
+    function displayUndrawn(namesLeft) {
+      let undrawnDiv = document.getElementById('undrawn');
+      if (!namesLeft || namesLeft.length === 0) {
+        undrawnDiv.innerHTML = '';
+        return;
+      }
+      undrawnDiv.innerHTML =
+        `<div class="undrawn-title">Undrawn Members:</div>` +
+        `<ul>${namesLeft.map(name => `<li>${name}</li>`).join('')}</ul>`;
+    }
+
+    /**
+     * Main draw button: picks which mode to use.
+     */
+    function drawGroupsEventRouter() {
+      let isAtATime = document.getElementById('groupAtATimeToggle').checked;
+      if (isAtATime) {
+        drawGroupsAtATimeInit();
+      } else {
+        drawGroups();
+      }
+    }
+
+    // Assign main button's handler
+    document.getElementById('drawBtn').onclick = drawGroupsEventRouter;
+
+    // Initial mode label update
+    updateModeLabel();
+  </script>
+</body>
+</html>
