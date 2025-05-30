@@ -207,13 +207,15 @@
 
     <!-- Toggle for Draw Mode -->
     <div class="toggle-row">
-      <label style="margin:0;font-weight:500;">
-        <input type="checkbox" id="groupAtATimeToggle" checked>
-        Round Robin
-      </label>
+      <label for="drawModeSelect" style="margin:0;font-weight:500;">Draw Mode:</label>
+      <select id="drawModeSelect" style="font-size:1rem;padding:0.3em 0.7em;border-radius:6px;">
+        <option value="allAtOnce">All at once</option>
+        <option value="roundRobin">Round Robin</option>
+        <option value="autoRoundRobin">Auto Round Robin</option>
+      </select>
       <span id="modeLabel" style="color:#237;">Mode: All at once</span>
     </div>
-
+    
     <!-- Action Buttons -->
     <div class="button-row">
       <button id="drawBtn" onclick="drawGroups()">Draw Groups</button>
@@ -234,6 +236,7 @@
   <script>
     // Stores the state for "one at a time" mode
     let drawState = null;
+    let autoRoundRobinInterval = null;
 
     /**
      * Fisher-Yates shuffle: randomly shuffles an array in place.
@@ -249,13 +252,13 @@
      * Resets everything: input fields, results, undrawn, and state.
      */
     function resetAll() {
-      // document.getElementById('names').value = '';
-      // document.getElementById('groups').value = 3;
       document.getElementById('results').innerHTML = '';
       document.getElementById('undrawn').innerHTML = '';
       document.getElementById('drawNextBtn').style.display = 'none';
       document.getElementById('drawBtn').style.display = '';
+      document.getElementById('drawBtn').disabled = false;
       drawState = null;
+      if (autoRoundRobinInterval) clearInterval(autoRoundRobinInterval);
     }
 
     /**
@@ -274,16 +277,19 @@
      */
     function updateModeLabel() {
       let modeLabel = document.getElementById('modeLabel');
-      let isAtATime = document.getElementById('groupAtATimeToggle').checked;
-      modeLabel.textContent = isAtATime
-        ? "Mode: Round Robin"
-        : "Mode: All at once";
+      let mode = document.getElementById('drawModeSelect').value;
+      if (mode === "autoRoundRobin") {
+        modeLabel.textContent = "Mode: Auto Round Robin";
+      } else if (mode === "roundRobin") {
+        modeLabel.textContent = "Mode: Round Robin";
+      } else {
+        modeLabel.textContent = "Mode: All at once";
+      }
     }
 
     // Toggle event: update label and reset on mode change
-    document.getElementById('groupAtATimeToggle').addEventListener('change', function() {
-      updateModeLabel();
-    });
+    document.getElementById('drawModeSelect').addEventListener('change', updateModeLabel);
+
 
     /**
      * Draws all groups and all members at once (default mode).
@@ -384,6 +390,25 @@
       }
     }
 
+    function startAutoRoundRobin() {
+      drawGroupsAtATimeInit();
+      document.getElementById('drawBtn').disabled = true;
+      document.getElementById('drawNextBtn').style.display = 'none';
+      if (autoRoundRobinInterval) clearInterval(autoRoundRobinInterval);
+      autoRoundRobinInterval = setInterval(() => {
+        if (!drawState || drawState.namesLeft.length === 0) {
+          clearInterval(autoRoundRobinInterval);
+          document.getElementById('drawBtn').disabled = false;
+          return;
+        }
+        drawNextMember();
+        if (drawState.namesLeft.length === 0) {
+          clearInterval(autoRoundRobinInterval);
+          document.getElementById('drawBtn').disabled = false;
+        }
+      }, 2000);
+    }
+
     /**
      * Displays all groups (even if some are empty) in the results area.
      * @param {Array[]} groups - Array of arrays, each representing a group.
@@ -427,8 +452,10 @@
      * Main draw button: picks which mode to use.
      */
     function drawGroupsEventRouter() {
-      let isAtATime = document.getElementById('groupAtATimeToggle').checked;
-      if (isAtATime) {
+      let mode = document.getElementById('drawModeSelect').value;
+      if (mode === "autoRoundRobin") {
+        startAutoRoundRobin();
+      } else if (mode === "roundRobin") {
         drawGroupsAtATimeInit();
       } else {
         drawGroups();
